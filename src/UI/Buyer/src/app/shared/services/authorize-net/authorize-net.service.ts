@@ -4,7 +4,7 @@ import {
   AppConfig,
   applicationConfiguration,
 } from '@app-buyer/config/app.config';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { flatMap } from 'rxjs/operators';
 import {
   CreateCardDetails,
@@ -19,6 +19,7 @@ import {
   OcOrderService,
   BuyerCreditCard,
 } from '@ordercloud/angular-sdk';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 /**
  *  OrderCloud does not store full credit card details or process finacial transactions.
@@ -60,6 +61,18 @@ export class AuthorizeNetService {
     return this.post({
       BuyerID: this.appConfig.appname,
       TransactionType: 'createCreditCard',
+      CardDetails: {
+        CardType: this.getCardType(card.CardNumber),
+        ...card,
+        Shared: false,
+      },
+    });
+  }
+
+  EditCreditCard(card: CreateCardDetails): Observable<CreateCardResponse> {
+    return this.post({
+      BuyerID: this.appConfig.appname,
+      TransactionType: 'updateCreditCard',
       CardDetails: {
         CardType: this.getCardType(card.CardNumber),
         ...card,
@@ -166,6 +179,22 @@ export class AuthorizeNetService {
     throw Error('Card number does not match accepted credit card companies');
   }
 
+  //returns true if is Visa, MasterCard, or Discover
+  isValidCardType(cardNumber: string) {
+    if (!cardNumber) {
+      return false;
+    }
+
+    for (const type in this.acceptedCards) {
+      if (this.acceptedCards.hasOwnProperty(type)) {
+        if (this.acceptedCards[type].test(cardNumber)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   mapToNonSensitive(card: CreateCardDetails): BuyerCreditCard {
     return {
       CardType: this.getCardType(card.CardNumber),
@@ -173,5 +202,62 @@ export class AuthorizeNetService {
       CardholderName: card.CardholderName,
       ExpirationDate: card.ExpirationDate,
     };
+  }
+
+  // this function will weed out made up numbers with the luhn algorithm. this does not guarantee that a number exists
+  isValidPerLuhnAlgorithm(cardNumber: string) {
+    const map: number[] = [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      0,
+      2,
+      4,
+      6,
+      8,
+      1,
+      3,
+      5,
+      7,
+      9,
+    ];
+    let sum = 0;
+    const cardNumberArrayString: string[] = cardNumber.split('');
+    const cardNumberArray: number[] = cardNumberArrayString.map((number) =>
+      parseInt(number, 10)
+    );
+    const numberLength: number = cardNumber.split('').length - 1;
+    for (let i = 0; i <= numberLength; i++) {
+      sum += map[cardNumberArray[numberLength - i] + (i & 1) * 10];
+    }
+    return sum % 10 !== 0;
+  }
+
+  validateCardNumberFormControl(
+    control: AbstractControl
+  ): ValidationErrors | null {
+    const cardNumber = control.value;
+    if (!cardNumber) {
+      return of(null);
+    }
+
+    const passesLuhnTest = this.isValidPerLuhnAlgorithm(cardNumber);
+    const isValidCardType = this.isValidCardType(cardNumber);
+
+    const errorObj = {};
+    if (!passesLuhnTest) Object.assign(errorObj, { luhnTest: true });
+    if (!isValidCardType) Object.assign(errorObj, { cardTypeError: true });
+    if (passesLuhnTest && isValidCardType) {
+      return of(null);
+    }
+    debugger;
+    return of(errorObj);
   }
 }

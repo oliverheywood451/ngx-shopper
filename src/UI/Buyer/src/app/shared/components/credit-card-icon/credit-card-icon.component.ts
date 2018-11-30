@@ -5,8 +5,6 @@ import {
   faCcMastercard,
   faCcDiscover,
 } from '@fortawesome/free-brands-svg-icons';
-import { BuyerCreditCard, CreditCard } from '@ordercloud/angular-sdk';
-
 @Component({
   selector: 'shared-credit-card-icon',
   templateUrl: './credit-card-icon.component.html',
@@ -14,7 +12,8 @@ import { BuyerCreditCard, CreditCard } from '@ordercloud/angular-sdk';
 })
 export class CreditCardIconComponent implements OnInit {
   cardIcon: IconDefinition;
-  @Input() card: CreditCard | BuyerCreditCard;
+
+  @Input() cardType: string;
   @Input() size: string;
 
   ngOnInit() {
@@ -22,7 +21,7 @@ export class CreditCardIconComponent implements OnInit {
   }
 
   setCardIcon(): IconDefinition {
-    switch (this.card.CardType.toLowerCase()) {
+    switch (this.cardType.toLowerCase()) {
       case 'visa':
         return faCcVisa;
       case 'mastercard':

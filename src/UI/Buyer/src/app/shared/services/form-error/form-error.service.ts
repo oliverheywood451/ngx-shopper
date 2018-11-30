@@ -54,4 +54,19 @@ export class AppFormErrorService {
       form.get(controlName).hasError('minlength') && form.get(controlName).dirty
     );
   }
+
+  hasInvalidCreditCardNumber(controlName: string, form: FormGroup) {
+    return (
+      form.get(controlName).hasError('luhnTest') && form.get(controlName).dirty
+    );
+  }
+
+  hasInvalidCreditCardType(controlName: string, form: FormGroup) {
+    // only shows if other tests pass
+    return (
+      form.get(controlName).hasError('cardTypeError') &&
+      form.get(controlName).dirty &&
+      !form.get(controlName).hasError('luhnTest')
+    );
+  }
 }

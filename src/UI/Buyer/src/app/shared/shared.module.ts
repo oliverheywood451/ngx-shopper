@@ -80,6 +80,7 @@ import { OrderPaymentListComponent } from '@app-buyer/shared/components/payment-
 import { ChangePasswordFormComponent } from '@app-buyer/shared/components/change-password-form/change-password-form.component';
 import { IsProfiledUserGuard } from '@app-buyer/shared/guards/is-profiled-user/is-profiled-user.guard';
 import { RegexService } from '@app-buyer/shared/services/regex/regex.service';
+import { CreditCardFormatPipe } from './pipes/credit-card-format/credit-card-format.pipe';
 
 @NgModule({
   imports: [
@@ -134,6 +135,7 @@ import { RegexService } from '@app-buyer/shared/services/regex/regex.service';
     OrderStatusDisplayPipe,
     PaymentMethodDisplayPipe,
     MapToIterablePipe,
+    CreditCardFormatPipe,
     CreditCardIconComponent,
     AddressDisplayComponent,
     CreditCardDisplayComponent,
@@ -159,6 +161,7 @@ import { RegexService } from '@app-buyer/shared/services/regex/regex.service';
     OrderStatusDisplayPipe,
     PaymentMethodDisplayPipe,
     MapToIterablePipe,
+    CreditCardFormatPipe,
     PageTitleComponent,
     AddressDisplayComponent,
     CreditCardDisplayComponent,
@@ -205,6 +208,7 @@ export class SharedModule {
         OrderStatusDisplayPipe,
         PaymentMethodDisplayPipe,
         MapToIterablePipe,
+        CreditCardFormatPipe,
         AppErrorHandler,
         HasTokenGuard,
         IsProfiledUserGuard,
